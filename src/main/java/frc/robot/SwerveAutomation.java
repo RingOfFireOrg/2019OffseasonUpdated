@@ -6,9 +6,9 @@ public class SwerveAutomation {
 
 	private static SwerveAutomation swerveAutomation;
 
-	private static SwerveDrive swerveDrive;
+	private SwerveDrive swerveDrive;
 
-	private static AHRS ahrs;
+	private AHRS ahrs;
 
 	SwerveAutomation(AHRS ahrs, SwerveDrive swerveDrive) {
 		this.swerveDrive = swerveDrive;

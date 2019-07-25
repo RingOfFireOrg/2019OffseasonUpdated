@@ -520,7 +520,7 @@ public class SwerveDrive {
 
 		wheelSpeed = speedScale(wheelSpeed, 1);
 
-		wheelSpeed = limitForces(wheelSpeed);
+		//wheelSpeed = limitForces(wheelSpeed);
 		//will this use the array?
 		updateModuleHardwareStates(wheelSpeed);
 		setModules(wheelSpeed, wheelAngle);
