@@ -57,7 +57,7 @@ public class GamepadSwerve extends SwerveDrive {
 		if (rightDriveStick.getMagnitude() < RobotMap.ABSOLUTE_ROTATION_DEADZONE) {
 			joystickAbsoluteDirection = -1;
 		}
-
+		
 		double robotTranslateX;
 		double robotTranslateY;
 		double fieldTranslateX;
