@@ -324,14 +324,6 @@ public class SwerveDrive {
 		this.ahrsOffset = ahrsOffset;
 	}
 
-	void parkPosition() {
-		// can be activated to give the robot increased traction when stopped
-		frontRight.control(0, -45);
-		frontLeft.control(0, 45);
-		backLeft.control(0, -45);
-		backRight.control(0, 45);
-	}
-
 	void syncroDrive(double driveSpeed, double driveAngle, double twist, double gyroReading) {
 		// not field relative yet -- sitll needs work
 		driveAngle += gyroReading;
