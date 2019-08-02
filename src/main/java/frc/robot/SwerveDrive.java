@@ -277,8 +277,8 @@ public class SwerveDrive {
 		}
 
 		// sets all modules to the calculated speed and angle
-		frontRight.control(wheelSpeed[0], wheelAngle[0]);
 		frontLeft.control(wheelSpeed[1], wheelAngle[1]);
+		frontRight.control(wheelSpeed[0], wheelAngle[0]);
 		backLeft.control(wheelSpeed[2], wheelAngle[2]);
 		backRight.control(wheelSpeed[3], wheelAngle[3]);
 
