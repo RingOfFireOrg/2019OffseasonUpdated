@@ -17,7 +17,7 @@ public class GamepadSwerve extends SwerveDrive {
 	private Joystick rightDriveStick;
 	private JoystickButton joystickRobotFrontCargoButton;
 	private JoystickButton joystickRobotFrontHatchButton;
-	private JoystickButton joystickGyroResetButton;
+	//private JoystickButton joystickGyroResetButton;
 
 	public GamepadSwerve(AHRS ahrs, XboxController driveController, Joystick leftDriveStick, Joystick rightDriveStick) {
 		super(ahrs);
@@ -28,7 +28,7 @@ public class GamepadSwerve extends SwerveDrive {
 		driverGamepadTuningActivation = new JoystickButton(driveController, RobotMap.BACK_BUTTON_VALUE);
 		joystickRobotFrontCargoButton = new JoystickButton(leftDriveStick, RobotMap.JOYSTICK_ROBOT_FRONT_SET_CARGO);
 		joystickRobotFrontHatchButton = new JoystickButton(leftDriveStick, RobotMap.JOYSTICK_ROBOT_FRONT_SET_HATCH);
-		joystickGyroResetButton = new JoystickButton(rightDriveStick, RobotMap.JOYSTICK_RESET_GYRO_BUTTON);
+		//joystickGyroResetButton = new JoystickButton(rightDriveStick, RobotMap.JOYSTICK_RESET_GYRO_BUTTON);
 	}
 
 	public void runSwerve() {

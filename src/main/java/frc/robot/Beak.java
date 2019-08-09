@@ -1,8 +1,6 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Beak {
     private boolean isOpen;
