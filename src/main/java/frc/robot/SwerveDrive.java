@@ -473,16 +473,16 @@ public class SwerveDrive {
 		// initializing the main variables
 		Point fieldRelativeVector = new Point(driveFieldTranslationX, driveFieldTranslationY);
 		Point robotRelativeVector = new Point();
-		
 		double unregulatedRotationValue = unregulatedTurning;
 		double absoluteFieldRelativeDirection = fieldRelativeRobotDirection;
 
+		//merges/chooses the two translation vectors
 		Point translationVector = convertToFieldRelative(robotRelativeVector, fieldRelativeVector, gyroValueProcessed);
 		
-		double rotationMagnitude = rotationMagnitude(translationVector, absoluteFieldRelativeDirection, unregulatedRotationValue, gyroValueProcessed, gyroValueUnprocessed);
+		//compressing turn based parameters into a single vector
+		Point rotationVector = rotationMagnitude(translationVector, absoluteFieldRelativeDirection, unregulatedRotationValue, gyroValueProcessed, gyroValueUnprocessed);
 
-		Point rotationVector = new Point(rotationMagnitude, rotationMagnitude);
-
+		//combining translation and rotation vectors into four vectors, one per wheel
 		Point[] wheelVector = new Point[4];
 
 		wheelVector[0] = GeometricMath.vectorAddition(translationVector, GeometricMath.rotateVector(rotationVector, 90));
@@ -490,26 +490,12 @@ public class SwerveDrive {
 		wheelVector[2] = GeometricMath.vectorAddition(translationVector, GeometricMath.rotateVector(rotationVector, 270));
 		wheelVector[3] = GeometricMath.vectorAddition(translationVector, GeometricMath.rotateVector(rotationVector, 180));
 
-		double[] wheelSpeed = new double[4];
-
-		wheelSpeed[0] = wheelVector[0].distanceFromZero();
-		wheelSpeed[1] = wheelVector[1].distanceFromZero();
-		wheelSpeed[2] = wheelVector[2].distanceFromZero();
-		wheelSpeed[3] = wheelVector[3].distanceFromZero();
-
-		double[] wheelAngle = new double[4];
-
-		wheelAngle[0] = 360 - wheelVector[0].getCompassAngle();
-		wheelAngle[1] = 360 - wheelVector[1].getCompassAngle();
-		wheelAngle[2] = 360 - wheelVector[2].getCompassAngle();
-		wheelAngle[3] = 360 - wheelVector[3].getCompassAngle();
-
-		wheelSpeed = speedScale(wheelSpeed, 1);
+		wheelVector = speedScale(wheelVector, 1);
 
 		//wheelSpeed = limitForces(wheelSpeed);
 		//will this use the array?
-		updateModuleHardwareStates(wheelSpeed);
-		setModules(wheelSpeed, wheelAngle);
+		updateModuleHardwareStates(wheelVector);
+		setModules(wheelVector);
 
 		dataShoot(gyroValueProcessed);
 	}
@@ -552,15 +538,15 @@ public class SwerveDrive {
 		return currentVelocity;
 	}
 
-	void updateModuleHardwareStates(double[] wheelSpeeds) {
+	void updateModuleHardwareStates(Point[] wheelSpeeds) {
 
-		modulePowerInput[0].add(wheelSpeeds[0]);
+		modulePowerInput[0].add(wheelSpeeds[0].distanceFromZero());
 		encoderRateResponse[0].add(frontRightDegreesPerSecond());
-		modulePowerInput[1].add(wheelSpeeds[1]);
+		modulePowerInput[1].add(wheelSpeeds[1].distanceFromZero());
 		encoderRateResponse[1].add(frontLeftDegreesPerSecond());
-		modulePowerInput[2].add(wheelSpeeds[2]);
+		modulePowerInput[2].add(wheelSpeeds[2].distanceFromZero());
 		encoderRateResponse[2].add(backLeftDegreesPerSecond());
-		modulePowerInput[3].add(wheelSpeeds[3]);
+		modulePowerInput[3].add(wheelSpeeds[3].distanceFromZero());
 		encoderRateResponse[3].add(backRightDegreesPerSecond());
 
 		if (modulePowerInput[0].getAverage() > 0.8 && encoderRateResponse[0].getAverage() < 10) {
@@ -621,7 +607,7 @@ public class SwerveDrive {
 		return robotRelativeVector;
 	}
 
-	double rotationMagnitude(Point translation, double absoluteTargetAngle, double unregulatedTurnValue, double drivetrainCompassHeading, double drivetrainAngleAccumulated) {
+	Point rotationMagnitude(Point translation, double absoluteTargetAngle, double unregulatedTurnValue, double drivetrainCompassHeading, double drivetrainAngleAccumulated) {
 		gyroRateBuffer.add(ahrs.getRate());
 		double rotationMagnitude;
 		if (absoluteTargetAngle != -1) {
@@ -656,33 +642,33 @@ public class SwerveDrive {
 		} else if (rotationMagnitude < -1) {
 			rotationMagnitude = -1;
 		}
-		return rotationMagnitude;
+		return new Point(rotationMagnitude, rotationMagnitude);
 	}
 
-	double[] speedScale(double[] speedSet, double speedLimit) {
-		double maxSpeed = speedSet[0];
-		if (speedSet[1] > maxSpeed) {
-			maxSpeed = speedSet[1];
+	Point[] speedScale(Point[] speedSet, double speedLimit) {
+		double maxSpeed = speedSet[0].distanceFromZero();
+		if (speedSet[1].distanceFromZero() > maxSpeed) {
+			maxSpeed = speedSet[1].distanceFromZero();
 		}
-		if (speedSet[2] > maxSpeed) {
-			maxSpeed = speedSet[2];
+		if (speedSet[2].distanceFromZero() > maxSpeed) {
+			maxSpeed = speedSet[2].distanceFromZero();
 		}
-		if (speedSet[3] > maxSpeed) {
-			maxSpeed = speedSet[3];
+		if (speedSet[3].distanceFromZero() > maxSpeed) {
+			maxSpeed = speedSet[3].distanceFromZero();
 		}
 		if (maxSpeed > speedLimit) {
 			for (int i = 0; i < 4; i++) {
-				speedSet[i] /= maxSpeed;
+				speedSet[i] = GeometricMath.scaleVector(speedSet[i], 1 / maxSpeed);
 			}
 		}
 		return speedSet;
 	}
 
-	void setModules(double[] speed, double[] angle) {
-		frontRight.control(speed[0], angle[0]);
-		frontLeft.control(speed[1], angle[1]);
-		backLeft.control(speed[2], angle[2]);
-		backRight.control(speed[3], angle[3]);
+	void setModules(Point[] vectors) {
+		frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
+		frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
+		backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
+		backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
 	}
 
 	void dataShoot(double gyroValue) {

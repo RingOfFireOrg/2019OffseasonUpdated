@@ -23,6 +23,10 @@ public class GeometricMath {
         return new Point(a.getX() - b.getX(), a.getY() - b.getY());
     }
 
+    static Point scaleVector(Point a, double scaleValue){
+        return new Point(a.getX() * scaleValue, a.getY() * scaleValue);
+    }
+
     static Point midPoint(Point a, Point b) {
         return new Point((a.getX() + b.getX()) / 2, (a.getY() + b.getY()) / 2);
     }
