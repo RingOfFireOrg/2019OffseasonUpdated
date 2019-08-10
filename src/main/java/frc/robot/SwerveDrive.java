@@ -472,7 +472,7 @@ public class SwerveDrive {
 
 		// initializing the main variables
 		Point fieldRelativeVector = new Point(driveFieldTranslationX, driveFieldTranslationY);
-		Point robotRelativeVector = new Point();
+		Point robotRelativeVector = new Point(driveRobotTranslationX, driveRobotTranslationY);
 		double unregulatedRotationValue = unregulatedTurning;
 		double absoluteFieldRelativeDirection = fieldRelativeRobotDirection;
 
@@ -494,10 +494,10 @@ public class SwerveDrive {
 
 		//wheelSpeed = limitForces(wheelSpeed);
 		//will this use the array?
-		updateModuleHardwareStates(wheelVector);
+		//updateModuleHardwareStates(wheelVector);
 		setModules(wheelVector);
 
-		dataShoot(gyroValueProcessed);
+		//dataShoot(gyroValueProcessed);
 	}
 
 	double[] limitForces(double[] currentVelocity) {
@@ -665,11 +665,20 @@ public class SwerveDrive {
 	}
 
 	void setModules(Point[] vectors) {
-		frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
-		frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
-		backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
-		backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
+		// frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
+		// frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
+		// backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
+		// backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
+		double power = 0.42342342934797;
+		frontRight.control(power, 0);
+		SmartDashboard.putNumber("translationVector", power);
+		SmartDashboard.putNumber("data1", vectors[0].distanceFromZero());
+		// frontRight.control(0, 360 - vectors[0].getCompassAngle());
+		// frontLeft.control(0, 360 - vectors[1].getCompassAngle());
+		// backLeft.control(0, 360 - vectors[2].getCompassAngle());
+		// backRight.control(0, 360 - vectors[3].getCompassAngle());
 	}
+
 
 	void dataShoot(double gyroValue) {
 		// reads out the raw angles, processed angles, speed, and gyro
