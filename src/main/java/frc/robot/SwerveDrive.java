@@ -473,13 +473,7 @@ public class SwerveDrive {
 		// initializing the main variables
 		Point fieldRelativeVector = new Point(driveFieldTranslationX, driveFieldTranslationY);
 		Point robotRelativeVector = new Point();
-		if (isCargoFront) {
-			robotRelativeVector.setX(driveRobotTranslationX);
-			robotRelativeVector.setY(driveRobotTranslationY);
-		} else {
-			robotRelativeVector.setX(-driveRobotTranslationY);
-			robotRelativeVector.setY(driveRobotTranslationX);
-		}
+		
 		double unregulatedRotationValue = unregulatedTurning;
 		double absoluteFieldRelativeDirection = fieldRelativeRobotDirection;
 
