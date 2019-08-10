@@ -3,7 +3,6 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class CargoManipulator {
@@ -21,7 +20,7 @@ public class CargoManipulator {
 
     private intakePosition position = intakePosition.MANUAL_MODE;
     private wheelState wheels;
-    private encoderPresence currentEncoderPresence;
+   /// private encoderPresence currentEncoderPresence;
     public TalonSRX leftIntakeWheel;
     public TalonSRX rightIntakeWheel;
     public TalonSRX cargoArmMotor;
@@ -48,7 +47,7 @@ public class CargoManipulator {
         rightIntakeWheel = new TalonSRX(RobotMap.RIGHT_INTAKE_WHEEL);
         cargoArmMotor = new TalonSRX(RobotMap.CARGO_ARM);
         wheels = wheelState.OFF;
-        currentEncoderPresence = encoderPresence.RIGHT;
+        //currentEncoderPresence = encoderPresence.RIGHT;
         armAngleControl = new PID(0.0075, 0.00002, 0);
         armAngleControl.setOutputRange(-0.75, 0.75);
         rightCargoEncoder = new PotentiometerEncoder(RobotMap.RIGHT_ENCODER_CARGO_ARM, 180);

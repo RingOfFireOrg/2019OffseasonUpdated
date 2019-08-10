@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -113,7 +112,7 @@ public class Robot extends TimedRobot {
 
 		// swerveDrive.joystickSwerve(rightDriveJoystick, leftDriveJoystick);
 		// }
-		drivePeriodic();
+		this.drivePeriodic();
 	}
 
 	@Override

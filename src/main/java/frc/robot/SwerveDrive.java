@@ -277,8 +277,8 @@ public class SwerveDrive {
 		}
 
 		// sets all modules to the calculated speed and angle
-		frontRight.control(wheelSpeed[0], wheelAngle[0]);
 		frontLeft.control(wheelSpeed[1], wheelAngle[1]);
+		frontRight.control(wheelSpeed[0], wheelAngle[0]);
 		backLeft.control(wheelSpeed[2], wheelAngle[2]);
 		backRight.control(wheelSpeed[3], wheelAngle[3]);
 
@@ -322,14 +322,6 @@ public class SwerveDrive {
 
 	void setAHRSOffset(double ahrsOffset) {
 		this.ahrsOffset = ahrsOffset;
-	}
-
-	void parkPosition() {
-		// can be activated to give the robot increased traction when stopped
-		frontRight.control(0, -45);
-		frontLeft.control(0, 45);
-		backLeft.control(0, -45);
-		backRight.control(0, 45);
 	}
 
 	void syncroDrive(double driveSpeed, double driveAngle, double twist, double gyroReading) {

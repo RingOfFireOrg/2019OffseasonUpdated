@@ -128,7 +128,7 @@ public class SwerveModule {
 		} else if (wheelTurnAngle0to360 > 175 && wheelTurnAngle0to360 < 185){
 			//stop steering
 			steer.set(ControlMode.PercentOutput, 0);
-			setDriveSpeed(-driveSpeed);
+			setDriveSpeed(-driveSpeed);  //This might be the problem jw/rm
 		} else {
 			if (wheelTurnAngle0to360 > 90 && wheelTurnAngle0to360 < 270) // for quadrants 2 & 3
 			{
