@@ -493,7 +493,6 @@ public class SwerveDrive {
 		wheelVector = speedScale(wheelVector, 1);
 
 		//wheelSpeed = limitForces(wheelSpeed);
-		//will this use the array?
 		//updateModuleHardwareStates(wheelVector);
 		setModules(wheelVector);
 
@@ -665,14 +664,14 @@ public class SwerveDrive {
 	}
 
 	void setModules(Point[] vectors) {
-		// frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
-		// frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
-		// backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
-		// backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
-		double power = 0.42342342934797;
-		frontRight.control(power, 0);
-		SmartDashboard.putNumber("translationVector", power);
-		SmartDashboard.putNumber("data1", vectors[0].distanceFromZero());
+		frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
+		frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
+		backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
+		backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
+		// double power = 0.42342342934797;
+		// frontRight.control(power, 0);
+		// SmartDashboard.putNumber("translationVector", power);
+		// SmartDashboard.putNumber("data1", vectors[0].distanceFromZero());
 		// frontRight.control(0, 360 - vectors[0].getCompassAngle());
 		// frontLeft.control(0, 360 - vectors[1].getCompassAngle());
 		// backLeft.control(0, 360 - vectors[2].getCompassAngle());

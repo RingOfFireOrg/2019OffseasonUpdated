@@ -25,7 +25,7 @@ public class SwerveModule {
 	double accumulatedGR = 0;
 	int powerInversion = 1;
 	static final double MAX_STEER_POWER = 0.8;
-	public boolean driveEncoderWorking = true;
+	public boolean driveEncoderWorking = true; //try switching this to false for initiative -- CM (8-15-19)
 	
 
 	//will need to make changes to the input --Encoder driveRotEncoder <-- add to constructor
@@ -120,7 +120,6 @@ public class SwerveModule {
 		double wheelTurnAngle0to360 = ((angleGoal - currentAngle) + 720) % 360;
 		double optimizedWheelTurnAngle; //will be set to a value between -90 and 90
 	
-
 		if (wheelTurnAngle0to360 < 5 || wheelTurnAngle0to360 > 355) {
 			// stop steering
 			steer.set(ControlMode.PercentOutput, 0);
