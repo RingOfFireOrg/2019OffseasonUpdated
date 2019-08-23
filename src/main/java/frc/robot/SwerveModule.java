@@ -85,14 +85,15 @@ public class SwerveModule {
 		} else if (drivePower < -RobotMap.MAX_DRIVE_POWER) {
 			drivePower = -RobotMap.MAX_DRIVE_POWER;
 		}
-		if (driveEncoderWorking) {
-			speedRegulation.setError(drivePower - ((getRate() * RobotMap.DPS_TO_RPM) / (RobotMap.MAX_SWERVE_SPEED_IN_RPM * RobotMap.DRIVE_GEARING_RATIO)) );
-			speedRegulation.update();
-			optimizedSpeed = GeometricMath.limitRange(drivePower + speedRegulation.getOutput(), -RobotMap.MAX_DRIVE_POWER, RobotMap.MAX_DRIVE_POWER);
-			drive.set(ControlMode.PercentOutput, optimizedSpeed);
-		} else {
+		// if (driveEncoderWorking) {
+		// 	speedRegulation.setError(drivePower - ((getRate() * RobotMap.DPS_TO_RPM) / (RobotMap.MAX_SWERVE_SPEED_IN_RPM * RobotMap.DRIVE_GEARING_RATIO)) );
+		// 	speedRegulation.update();
+		// 	optimizedSpeed = GeometricMath.limitRange(drivePower + speedRegulation.getOutput(), -RobotMap.MAX_DRIVE_POWER, RobotMap.MAX_DRIVE_POWER);
+		// 	drive.set(ControlMode.PercentOutput, optimizedSpeed);
+		// } else {
 			drive.set(ControlMode.PercentOutput, drivePower);
-		}
+			SmartDashboard.putNumber("Data2", drivePower);
+		//}
 		
 		
 		//SmartDashboard.putNumber("OS - " + moduleName, optimizedSpeed);

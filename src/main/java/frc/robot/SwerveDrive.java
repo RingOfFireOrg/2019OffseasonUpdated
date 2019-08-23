@@ -668,6 +668,7 @@ public class SwerveDrive {
 		frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
 		backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
 		backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
+		SmartDashboard.putNumber("Data1", vectors[0].distanceFromZero());
 		// double power = 0.42342342934797;
 		// frontRight.control(power, 0);
 		// SmartDashboard.putNumber("translationVector", power);
