@@ -89,218 +89,6 @@ public class SwerveDrive {
 		return swerveDrive;
 	}
 
-	void translateAndRotate(double driveFieldTranslationX, double driveFieldTranslationY, double unregulatedTurning, double fieldRelativeRobotDirection, double driveRobotTranslationX,
-			double driveRobotTranslationY) {
-		// turns the gyro into a 0-360 range -- easier to work with
-		double gyroValueUnprocessed = ahrs.getAngle() - this.ahrsOffset;
-		double gyroValueProcessed = (Math.abs(((int) (gyroValueUnprocessed)) * 360) + gyroValueUnprocessed) % 360;
-
-		// initializing the main variables
-		double fieldRelativeX = driveFieldTranslationX;
-		double fieldRelativeY = driveFieldTranslationY;
-		double robotRelativeX;
-		double robotRelativeY;
-
-		if (isCargoFront) {
-			robotRelativeX = driveRobotTranslationX;
-			robotRelativeY = driveRobotTranslationY;
-		} else {
-			robotRelativeX = -driveRobotTranslationY;
-			robotRelativeY = driveRobotTranslationX;
-		}
-
-		double unregulatedRotationValue = unregulatedTurning;
-		double absoluteFieldRelativeDirection = fieldRelativeRobotDirection;
-
-		// Translation Modes -- field relative or robot relative
-		double fieldTransMag = Math.sqrt(Math.pow(fieldRelativeX, 2) + Math.pow(fieldRelativeY, 2));
-
-		// if (fieldTransMag < RobotMap.TRANSLATION_DEADZONE) {
-		// 	fieldTransMag = 0;
-		// }
-			
-		if (fieldTransMag != 0) {
-			double initialAngle;
-
-			//converting the field translations to an angle
-			if (fieldRelativeX == 0) {
-				if (fieldRelativeY > 0) {
-					//eliminates tan asymptotes
-					initialAngle = 90;
-				} else {
-					//eliminates tan asymptotes
-					initialAngle = -90;
-				}
-			} else {
-				initialAngle = Math.toDegrees(Math.atan(fieldRelativeY / fieldRelativeX));
-			}
-
-			if (fieldRelativeX < 0) {
-				if (fieldRelativeY > 0) {
-					initialAngle += 180;
-				} else {
-					initialAngle -= 180;
-				}
-			}
-
-			double processedAngle = initialAngle + gyroValueProcessed;
-			robotRelativeX = fieldTransMag * Math.cos(Math.toRadians(processedAngle));
-			robotRelativeY = fieldTransMag * Math.sin(Math.toRadians(processedAngle));
-		} //else if (Math.sqrt(Math.pow(robotRelativeX, 2) + Math.pow(robotRelativeY, 2)) < RobotMap.TRANSLATION_DEADZONE) {
-		// 	// if the field relative code didn't run, robot rel will still be set from its
-		// 	// declaration, this rules out deadzones
-		// 	robotRelativeX = 0;
-		// 	robotRelativeY = 0;
-		// }
-
-		// Rotation Modes -- absolute, unregulated, and none
-		// gyro rate buffer updating
-		gyroRateBuffer.add(ahrs.getRate());
-		double rotationMagnitude;
-		if (absoluteFieldRelativeDirection != -1) {
-			if (absoluteFieldRelativeDirection < 0)
-				absoluteFieldRelativeDirection += 360;
-			if (gyroValueProcessed > 180 && absoluteFieldRelativeDirection == 0) {
-				absoluteFieldRelativeDirection = 360;
-			}
-			rotationMagnitude = (absoluteFieldRelativeDirection - gyroValueProcessed) * 0.005;
-			if (Math.abs(absoluteFieldRelativeDirection - gyroValueProcessed) > 180)
-				rotationMagnitude *= -1;
-			driveStraight = false;
-		} else if (unregulatedRotationValue > RobotMap.ROTATION_DEADZONE
-				|| unregulatedRotationValue < -RobotMap.ROTATION_DEADZONE) {
-			rotationMagnitude = unregulatedRotationValue;
-			driveStraight = false;
-		} else if (Math.sqrt(Math.pow(robotRelativeX, 2) + Math.pow(robotRelativeY, 2)) > RobotMap.TRANSLATION_DEADZONE
-				* 0.75 && Math.abs(gyroRateBuffer.getAverage()) < 3) {
-			// no turning methods -- goes straight
-			if (driveStraight == false) {
-				driveStraight = true;
-				translationAngle = gyroValueUnprocessed;
-				pidDrivingStraight.reset();
-			}
-			pidDrivingStraight.setError(gyroValueUnprocessed - translationAngle);
-			pidDrivingStraight.update();
-			rotationMagnitude = -pidDrivingStraight.getOutput();
-			// SmartDashboard.putNumber("translationAngle", translationAngle);
-			// SmartDashboard.putNumber("DSEC - ", -pidDrivingStraight.getOutput());
-		} else {
-			rotationMagnitude = 0;
-		}
-		if (rotationMagnitude > 1)
-			rotationMagnitude = 1;
-		if (rotationMagnitude < -1)
-			rotationMagnitude = -1;
-
-		// SmartDashboard.putNumber("gyroRate", ahrs.getRate());
-
-		// Vector math to combine the translation and the rotation values
-		// adding the various cartesian points for the end of the vectors
-		double xWithRotation = robotRelativeX + rotationMagnitude;
-		double xWithoutRotation = robotRelativeX - rotationMagnitude;
-		double yWithRotation = robotRelativeY + rotationMagnitude;
-		double yWithoutRotation = robotRelativeY - rotationMagnitude;
-
-		// Constructing the arrays to be used to determine outcomes for each wheel
-		double wheelX[] = new double[4]; // the x value of the wheels vector
-		double wheelY[] = new double[4]; // the y value of the wheels vector
-
-		double wheelSpeed[] = new double[4]; // the speed that will be assigned to the wheels output
-		double wheelAngle[] = new double[4]; // the angle that will be assigned to the modules output
-
-		// individually processes each wheel -- determines speed and angle
-		for (int i = 0; i < 4; i++) {
-
-			// for each module, the turn vectors will extend in a different direction
-			if (i == 0 || i == 1) {
-				wheelX[i] = xWithRotation;
-			} else {
-				wheelX[i] = xWithoutRotation;
-			}
-
-			if (i == 0 || i == 3) {
-				wheelY[i] = yWithoutRotation;
-			} else {
-				wheelY[i] = yWithRotation;
-			}
-
-			// the wheels speed is just the distance from the end of its added vectors and
-			// the wheels center
-			wheelSpeed[i] = Math.sqrt(Math.pow(wheelX[i], 2) + Math.pow(wheelY[i], 2));
-			// the angle is the interior angle of the formed triangle
-			wheelAngle[i] = Math.toDegrees(Math.atan(wheelX[i] / wheelY[i]));
-
-			// The math only allows for directions in 2 quadrants, have to reassign values
-			// to gain the 2nd and 3rd quadrants
-			if (wheelX[i] >= 0) {
-				if (wheelY[i] >= 0) {
-					// already in Q1
-				} else {
-					// shift to Q4
-					wheelAngle[i] += 180;
-				}
-			} else {
-				if (wheelY[i] >= 0) {
-					// shift to Q2
-				} else {
-					// shift to Q3
-					wheelAngle[i] -= 180;
-				}
-			}
-
-			// math is done assuming clockwise, wheel outputs are counterclockwise
-			wheelAngle[i] *= -1;
-
-			// makes all angles positive -- if negative will make it a positive co-terminal
-			// angle
-			if (wheelAngle[i] < 0) {
-				wheelAngle[i] += 360;
-			}
-		}
-
-		// assures that no wheel is given a speed higher than 1 -- if so, will divide
-		// all speeds by the highest speed
-		double maxSpeed = wheelSpeed[0];
-		if (wheelSpeed[1] > maxSpeed) {
-			maxSpeed = wheelSpeed[1];
-		}
-		if (wheelSpeed[2] > maxSpeed) {
-			maxSpeed = wheelSpeed[2];
-		}
-		if (wheelSpeed[3] > maxSpeed) {
-			maxSpeed = wheelSpeed[3];
-		}
-		if (maxSpeed > 1) {
-			for (int i = 0; i < 4; i++) {
-				wheelSpeed[i] /= maxSpeed;
-			}
-		}
-
-		// sets all modules to the calculated speed and angle
-		frontLeft.control(wheelSpeed[1], wheelAngle[1]);
-		frontRight.control(wheelSpeed[0], wheelAngle[0]);
-		backLeft.control(wheelSpeed[2], wheelAngle[2]);
-		backRight.control(wheelSpeed[3], wheelAngle[3]);
-
-		// reads out the raw angles, processed angles, speed, and gyro
-		SmartDashboard.putNumber("FR raw angle", frontRight.getAngle());
-		SmartDashboard.putNumber("FL raw angle", frontLeft.getAngle());
-		SmartDashboard.putNumber("BL raw angle", backLeft.getAngle());
-		SmartDashboard.putNumber("BR raw angle", backRight.getAngle());
-
-		// SmartDashboard.putNumber("FR Speed", wheelSpeed[0]);
-		// SmartDashboard.putNumber("FL Speed", wheelSpeed[1]);
-		// SmartDashboard.putNumber("BL Speed", wheelSpeed[2]);
-		// SmartDashboard.putNumber("BR Speed", wheelSpeed[3]);
-
-		// SmartDashboard.putNumber("FR Angle", wheelAngle[0]);
-		// SmartDashboard.putNumber("FL Angle", wheelAngle[1]);
-		// SmartDashboard.putNumber("BL Angle", wheelAngle[2]);
-		// SmartDashboard.putNumber("BR Angle", wheelAngle[3]);
-
-		SmartDashboard.putNumber("Gyro 0-360", gyroValueProcessed);
-	}
-
 	void selectiveTranslateAndRotate(selectiveSwerveDriveModes selectiveSwerveDriveMode, double turnInput,
 			double translateXInput, double translateYInput) {
 		this.selectiveSwerveDriveMode = selectiveSwerveDriveMode;
@@ -452,19 +240,12 @@ public class SwerveDrive {
 		}
 	}
 
-	//---
-	//---
-	//---
-	//Refactoring for translate and rotate
-	//---
-	//---
-	//---
 	
-
 	void translateAndRotateCM(double driveFieldTranslationX, double driveFieldTranslationY, double unregulatedTurning, double fieldRelativeRobotDirection, double driveRobotTranslationX, double driveRobotTranslationY) {
-		translateAndRotateRefactoredStructure(driveFieldTranslationX / RobotMap.MAX_CM_PER_SECOND, driveFieldTranslationY / RobotMap.MAX_CM_PER_SECOND, unregulatedTurning, fieldRelativeRobotDirection, driveRobotTranslationX / RobotMap.MAX_CM_PER_SECOND, driveRobotTranslationY / RobotMap.MAX_CM_PER_SECOND);
+		translateAndRotate(driveFieldTranslationX / RobotMap.MAX_CM_PER_SECOND, driveFieldTranslationY / RobotMap.MAX_CM_PER_SECOND, unregulatedTurning, fieldRelativeRobotDirection, driveRobotTranslationX / RobotMap.MAX_CM_PER_SECOND, driveRobotTranslationY / RobotMap.MAX_CM_PER_SECOND);
 	}
-	void translateAndRotateRefactoredStructure(double driveFieldTranslationX, double driveFieldTranslationY, double unregulatedTurning, double fieldRelativeRobotDirection, double driveRobotTranslationX,
+
+	void translateAndRotate(double driveFieldTranslationX, double driveFieldTranslationY, double unregulatedTurning, double fieldRelativeRobotDirection, double driveRobotTranslationX,
 			double driveRobotTranslationY) {
 		// turns the gyro into a 0-360 range -- easier to work with
 		double gyroValueUnprocessed = ahrs.getAngle() - this.ahrsOffset;
@@ -729,7 +510,6 @@ public class SwerveDrive {
 	public double frontRightCMPerSecond() {
 		return frontRightDegreesPerSecond() * RobotMap.INCH_TO_CM * RobotMap.SWERVE_WHEEL_DIAMETER * Math.PI / 360;
 	}
-	
 	public double frontLeftCMPerSecond() {
 		return frontLeftDegreesPerSecond() * 2.54 * 6 * 3.14 / 360;
 	}

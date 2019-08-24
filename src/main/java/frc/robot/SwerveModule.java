@@ -53,18 +53,6 @@ public class SwerveModule {
 		speedRegulation.reset();
 	}
 
-	public double convertToWheelRelative(double wheelAngleGoal) {
-		return ((wheelAngleGoal + zeroValue) + 720) % 360;
-	}
-
-	public double convertToRobotRelative(double wheelAngleGoal) {
-		return ((wheelAngleGoal - zeroValue) + 720) % 360;
-	}
-
-	public double robotRelativeAngle() {
-		return convertToRobotRelative(getAngle());
-	}
-
 	public double getAngle() {
 		return turnEncoder.getAngle();
 	}
@@ -155,5 +143,17 @@ public class SwerveModule {
 
 	public double driveEncoderDegrees(double relative) {
 		return driveEncoder.get() - relative;
+	}
+
+	public double convertToWheelRelative(double wheelAngleGoal) {
+		return ((wheelAngleGoal + zeroValue) + 720) % 360;
+	}
+
+	public double convertToRobotRelative(double wheelAngleGoal) {
+		return ((wheelAngleGoal - zeroValue) + 720) % 360;
+	}
+	
+	public double robotRelativeAngle() {
+		return convertToRobotRelative(getAngle());
 	}
 }

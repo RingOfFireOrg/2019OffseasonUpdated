@@ -109,7 +109,7 @@ public class GamepadSwerve extends SwerveDrive {
 
 		switch (driveMode) {
 		case 0:
-			translateAndRotateRefactoredStructure(fieldTranslateX, fieldTranslateY, unregulatedTurning,
+			translateAndRotate(fieldTranslateX, fieldTranslateY, unregulatedTurning,
 					absoluteDirection, robotTranslateX, robotTranslateY);
 			break;
 
