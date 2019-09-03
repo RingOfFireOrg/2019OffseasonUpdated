@@ -274,59 +274,61 @@ public class SwerveDrive {
 		wheelVector = speedScale(wheelVector, 1);
 
 		//wheelSpeed = limitForces(wheelSpeed);
+		wheelVector = motionProfiler(wheelVector);
 		//updateModuleHardwareStates(wheelVector);
 		setModules(wheelVector);
 
 		//dataShoot(gyroValueProcessed);
 	}
 
-	double[] limitForces(double[] currentVelocity) {
+	Point[] motionProfiler(Point[] currentVector) {
 		currentTimeStamp = swerveTimer.get();
 		for (int i = 0 ; i < 4 ; i ++) {
-			currentAcceleration[i] = (currentVelocity[i] - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
+			double currentVelocity = currentVector[i].getMagnitude();
+			currentAcceleration[i] = (currentVelocity - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
 			if (Math.abs(currentAcceleration[i]) > RobotMap.DRIVE_MAX_ACCELERATION_PER_SECOND) {
 				if (currentAcceleration[i] > 0) {
-					currentVelocity[i] = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_ACCELERATION_PER_SECOND);
+					currentVelocity = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_ACCELERATION_PER_SECOND);
 				} else {
-					currentVelocity[i] = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_ACCELERATION_PER_SECOND);
+					currentVelocity = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_ACCELERATION_PER_SECOND);
 				}
-				currentAcceleration[i] = (currentVelocity[i] - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
+				currentAcceleration[i] = (currentVelocity - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
 			}
 			currentJerk[i] = (currentAcceleration[i] - lastAcceleration[i]) / (currentTimeStamp - lastTimeStamp);
 			if (Math.abs(currentJerk[i]) > RobotMap.DRIVE_MAX_JERK_PER_SECOND) {
 				//MATH NEEDS TO BE FIXED
-				if (currentVelocity[i] > 0) {
+				if (currentVelocity > 0) {
 					if (currentJerk[i] > 0) {
-						currentVelocity[i] = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
+						currentVelocity = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
 					} else {
-						currentVelocity[i] = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
+						currentVelocity = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] + ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
 					}
 				} else {
 					if (currentJerk[i] > 0) {
-						currentVelocity[i] = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
+						currentVelocity = lastVelocity[i] + ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
 					} else {
-						currentVelocity[i] = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
+						currentVelocity = lastVelocity[i] - ((currentTimeStamp - lastTimeStamp) * (lastAcceleration[i] - ((currentTimeStamp - lastTimeStamp) * RobotMap.DRIVE_MAX_JERK_PER_SECOND)));
 					}
 				}
-				currentAcceleration[i] = (currentVelocity[i] - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
+				currentAcceleration[i] = (currentVelocity - lastVelocity[i]) / (currentTimeStamp - lastTimeStamp);
 			}
 			
-
-			lastVelocity[i] = currentVelocity[i];
+			lastVelocity[i] = currentVelocity;
 			lastAcceleration[i] = currentAcceleration[i];
+			currentVector[i].setMagnitude(currentVelocity);
 		}
-		return currentVelocity;
+		return currentVector;
 	}
 
 	void updateModuleHardwareStates(Point[] wheelSpeeds) {
 
-		modulePowerInput[0].add(wheelSpeeds[0].distanceFromZero());
+		modulePowerInput[0].add(wheelSpeeds[0].getMagnitude());
 		encoderRateResponse[0].add(frontRightDegreesPerSecond());
-		modulePowerInput[1].add(wheelSpeeds[1].distanceFromZero());
+		modulePowerInput[1].add(wheelSpeeds[1].getMagnitude());
 		encoderRateResponse[1].add(frontLeftDegreesPerSecond());
-		modulePowerInput[2].add(wheelSpeeds[2].distanceFromZero());
+		modulePowerInput[2].add(wheelSpeeds[2].getMagnitude());
 		encoderRateResponse[2].add(backLeftDegreesPerSecond());
-		modulePowerInput[3].add(wheelSpeeds[3].distanceFromZero());
+		modulePowerInput[3].add(wheelSpeeds[3].getMagnitude());
 		encoderRateResponse[3].add(backRightDegreesPerSecond());
 
 		if (modulePowerInput[0].getAverage() > 0.8 && encoderRateResponse[0].getAverage() < 10) {
@@ -361,7 +363,7 @@ public class SwerveDrive {
 	}
 
 	Point convertToFieldRelative(Point robotRelativeVector, Point fieldRelativeVector, double drivetrainAngle) {
-		double fieldTransMag = fieldRelativeVector.distanceFromZero();
+		double fieldTransMag = fieldRelativeVector.getMagnitude();
 		if (fieldTransMag != 0) {
 			double initialAngle;
 			if (fieldRelativeVector.getX() == 0) {
@@ -425,16 +427,20 @@ public class SwerveDrive {
 		return new Point(rotationMagnitude, rotationMagnitude);
 	}
 
+	Point[] wheelReferenceAlignment(Point []) {
+
+	}
+
 	Point[] speedScale(Point[] speedSet, double speedLimit) {
-		double maxSpeed = speedSet[0].distanceFromZero();
-		if (speedSet[1].distanceFromZero() > maxSpeed) {
-			maxSpeed = speedSet[1].distanceFromZero();
+		double maxSpeed = speedSet[0].getMagnitude();
+		if (speedSet[1].getMagnitude() > maxSpeed) {
+			maxSpeed = speedSet[1].getMagnitude();
 		}
-		if (speedSet[2].distanceFromZero() > maxSpeed) {
-			maxSpeed = speedSet[2].distanceFromZero();
+		if (speedSet[2].getMagnitude() > maxSpeed) {
+			maxSpeed = speedSet[2].getMagnitude();
 		}
-		if (speedSet[3].distanceFromZero() > maxSpeed) {
-			maxSpeed = speedSet[3].distanceFromZero();
+		if (speedSet[3].getMagnitude() > maxSpeed) {
+			maxSpeed = speedSet[3].getMagnitude();
 		}
 		if (maxSpeed > speedLimit) {
 			for (int i = 0; i < 4; i++) {
@@ -445,21 +451,20 @@ public class SwerveDrive {
 	}
 
 	void setModules(Point[] vectors) {
-		frontRight.control(vectors[0].distanceFromZero(), 360 - vectors[0].getCompassAngle());
-		frontLeft.control(vectors[1].distanceFromZero(), 360 - vectors[1].getCompassAngle());
-		backLeft.control(vectors[2].distanceFromZero(), 360 - vectors[2].getCompassAngle());
-		backRight.control(vectors[3].distanceFromZero(), 360 - vectors[3].getCompassAngle());
-		SmartDashboard.putNumber("Data1", vectors[0].distanceFromZero());
+		frontRight.control(vectors[0].getMagnitude(), 360 - vectors[0].getCompassAngle());
+		frontLeft.control(vectors[1].getMagnitude(), 360 - vectors[1].getCompassAngle());
+		backLeft.control(vectors[2].getMagnitude(), 360 - vectors[2].getCompassAngle());
+		backRight.control(vectors[3].getMagnitude(), 360 - vectors[3].getCompassAngle());
+		SmartDashboard.putNumber("Data1", vectors[0].getMagnitude());
 		// double power = 0.42342342934797;
 		// frontRight.control(power, 0);
 		// SmartDashboard.putNumber("translationVector", power);
-		// SmartDashboard.putNumber("data1", vectors[0].distanceFromZero());
+		// SmartDashboard.putNumber("data1", vectors[0].getMagnitude());
 		// frontRight.control(0, 360 - vectors[0].getCompassAngle());
 		// frontLeft.control(0, 360 - vectors[1].getCompassAngle());
 		// backLeft.control(0, 360 - vectors[2].getCompassAngle());
 		// backRight.control(0, 360 - vectors[3].getCompassAngle());
 	}
-
 
 	void dataShoot(double gyroValue) {
 		// reads out the raw angles, processed angles, speed, and gyro

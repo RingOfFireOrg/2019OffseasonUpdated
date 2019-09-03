@@ -23,7 +23,12 @@ public class Point {
         this.y = y;
     }
 
-    double distanceFromZero() {
+    void setMagnitude(double magnitude) {
+        this.x *= (magnitude / getMagnitude());
+        this.y *= (magnitude / getMagnitude());
+    }
+
+    double getMagnitude() {
         return Math.sqrt((x * x) + (y * y));
     }
 

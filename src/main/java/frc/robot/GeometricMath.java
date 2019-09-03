@@ -32,7 +32,7 @@ public class GeometricMath {
     }
 
     static Point rotateVector(Point a, double rotationInDegrees) {
-        double magnitude = a.distanceFromZero();
+        double magnitude = a.getMagnitude();
         double initialAngle = Math.toDegrees(Math.atan(a.getY() / a.getX()));
         if (a.getX() < 0) {
             if (a.getY() < 0) {
