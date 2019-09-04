@@ -133,19 +133,19 @@ public class SwerveDrive {
 			backLeft.control(driveSpeed, driveAngle);
 		}
 
-		SmartDashboard.putNumber("FR raw angle", frontRight.getAngle());
-		SmartDashboard.putNumber("FL raw angle", frontLeft.getAngle());
-		SmartDashboard.putNumber("BL raw angle", backLeft.getAngle());
-		SmartDashboard.putNumber("BR raw angle", backRight.getAngle());
+		SmartDashboard.putNumber("FR raw angle", frontRight.getRawAngle());
+		SmartDashboard.putNumber("FL raw angle", frontLeft.getRawAngle());
+		SmartDashboard.putNumber("BL raw angle", backLeft.getRawAngle());
+		SmartDashboard.putNumber("BR raw angle", backRight.getRawAngle());
 	}
 
 	void tuningMode() {
 		// used to tune the modules and their zero values
 
-		SmartDashboard.putNumber("FR raw angle", frontRight.getAngle());
-		SmartDashboard.putNumber("FL raw angle", frontLeft.getAngle());
-		SmartDashboard.putNumber("BL raw angle", backLeft.getAngle());
-		SmartDashboard.putNumber("BR raw angle", backRight.getAngle());
+		SmartDashboard.putNumber("FR raw angle", frontRight.getRawAngle());
+		SmartDashboard.putNumber("FL raw angle", frontLeft.getRawAngle());
+		SmartDashboard.putNumber("BL raw angle", backLeft.getRawAngle());
+		SmartDashboard.putNumber("BR raw angle", backRight.getRawAngle());
 	}
 
 	void setRobotFrontToCargo() {
@@ -209,19 +209,19 @@ public class SwerveDrive {
 			break;
 		}
 
-		SmartDashboard.putNumber("FR raw angle", frontRight.getAngle());
-		SmartDashboard.putNumber("FL raw angle", frontLeft.getAngle());
-		SmartDashboard.putNumber("BL raw angle", backLeft.getAngle());
-		SmartDashboard.putNumber("BR raw angle", backRight.getAngle());
+		SmartDashboard.putNumber("FR raw angle", frontRight.getRawAngle());
+		SmartDashboard.putNumber("FL raw angle", frontLeft.getRawAngle());
+		SmartDashboard.putNumber("BL raw angle", backLeft.getRawAngle());
+		SmartDashboard.putNumber("BR raw angle", backRight.getRawAngle());
 
 		// SmartDashboard.putNumber("Corrected angle FR",
-		// frontRight.convertToRobotRelative(frontRight.getAngle()));
+		// frontRight.convertToRobotRelative(frontRight.getRawAngle()));
 		// SmartDashboard.putNumber("Corrected angle FL",
-		// frontLeft.convertToRobotRelative(frontLeft.getAngle()));
+		// frontLeft.convertToRobotRelative(frontLeft.getRawAngle()));
 		// SmartDashboard.putNumber("Corrected angle BR",
-		// backRight.convertToRobotRelative(backRight.getAngle()));
+		// backRight.convertToRobotRelative(backRight.getRawAngle()));
 		// SmartDashboard.putNumber("Corrected angle BL",
-		// backLeft.convertToRobotRelative(backLeft.getAngle()));
+		// backLeft.convertToRobotRelative(backLeft.getRawAngle()));
 	}
 
 	void testSwerveModule(boolean isFront, boolean isLeft, double driveSpeed, double steerSpeed) {
@@ -427,7 +427,7 @@ public class SwerveDrive {
 		return new Point(rotationMagnitude, rotationMagnitude);
 	}
 
-	Point[] wheelReferenceAlignment(Point []) {
+	Point[] wheelReferenceAlignment(Point[]) {
 
 	}
 
@@ -468,10 +468,10 @@ public class SwerveDrive {
 
 	void dataShoot(double gyroValue) {
 		// reads out the raw angles, processed angles, speed, and gyro
-		SmartDashboard.putNumber("FR raw angle", frontRight.getAngle());
-		SmartDashboard.putNumber("FL raw angle", frontLeft.getAngle());
-		SmartDashboard.putNumber("BL raw angle", backLeft.getAngle());
-		SmartDashboard.putNumber("BR raw angle", backRight.getAngle());
+		SmartDashboard.putNumber("FR raw angle", frontRight.getRawAngle());
+		SmartDashboard.putNumber("FL raw angle", frontLeft.getRawAngle());
+		SmartDashboard.putNumber("BL raw angle", backLeft.getRawAngle());
+		SmartDashboard.putNumber("BR raw angle", backRight.getRawAngle());
 
 		SmartDashboard.putNumber("Gyro 0-360", gyroValue);
 
@@ -500,16 +500,16 @@ public class SwerveDrive {
 	}
 
 	public double frontRightAngle() {
-		return frontRight.getAngle();
+		return frontRight.getRawAngle();
 	}
 	public double frontLeftAngle() {
-		return frontLeft.getAngle();
+		return frontLeft.getRawAngle();
 	}
 	public double backLeftAngle() {
-		return backLeft.getAngle();
+		return backLeft.getRawAngle();
 	}
 	public double backRightAngle() {
-		return backRight.getAngle();
+		return backRight.getRawAngle();
 	}
 
 	public double frontRightCMPerSecond() {

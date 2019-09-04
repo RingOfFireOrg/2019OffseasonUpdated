@@ -53,7 +53,7 @@ public class SwerveModule {
 		speedRegulation.reset();
 	}
 
-	public double getAngle() {
+	public double getRawAngle() {
 		return turnEncoder.getAngle();
 	}
 
@@ -102,27 +102,32 @@ public class SwerveModule {
 		
 	}
 	
-	public void control(double driveSpeed, double wheelAngle) {
+	public double steerAngleDeviation(double goalRobotRelativeAngle) {
+		return ((goalRobotRelativeAngle - robotRelativeAngle()) + 720) % 360;
+	}
+
+	public void control(double goalDriveSpeed, double goalSteerAngle) {
 		SmartDashboard.putNumber("WheelSpeed:D/S-" + moduleName, getRate());
-		angleGoal = convertToWheelRelative(wheelAngle);
-		currentAngle = turnEncoder.getAngle();
-		double wheelTurnAngle0to360 = ((angleGoal - currentAngle) + 720) % 360;
+		
+		double wheelTurnAngle0to360 = steerAngleDeviation(goalSteerAngle);
 		double optimizedWheelTurnAngle; //will be set to a value between -90 and 90
 	
+		//should reform: never set steer to 0
+		//TODO make steering a PID -CM
 		if (wheelTurnAngle0to360 < 5 || wheelTurnAngle0to360 > 355) {
 			// stop steering
 			steer.set(ControlMode.PercentOutput, 0);
-			setDriveSpeed(driveSpeed);
+			setDriveSpeed(goalDriveSpeed);
 		} else if (wheelTurnAngle0to360 > 175 && wheelTurnAngle0to360 < 185){
 			//stop steering
 			steer.set(ControlMode.PercentOutput, 0);
-			setDriveSpeed(-driveSpeed);  //This might be the problem jw/rm
+			setDriveSpeed(-goalDriveSpeed);  //This might be the problem jw/rm
 		} else {
 			if (wheelTurnAngle0to360 > 90 && wheelTurnAngle0to360 < 270) // for quadrants 2 & 3
 			{
 				optimizedWheelTurnAngle = (wheelTurnAngle0to360 - 180); // converting angles from quadrant 2 to quad 4 and converting from quad 3 to quad 1
 				setSteerSpeed(optimizedWheelTurnAngle/90);
-				setDriveSpeed(-driveSpeed);// go backwards
+				setDriveSpeed(-goalDriveSpeed);// go backwards
 			} else // quads 1 & 4
 			{
 				if (wheelTurnAngle0to360 >= 270) // quad 4
@@ -132,7 +137,7 @@ public class SwerveModule {
 					optimizedWheelTurnAngle = wheelTurnAngle0to360; // quad 1, no change
 				}
 				setSteerSpeed(optimizedWheelTurnAngle/90);
-				setDriveSpeed(driveSpeed);// forward
+				setDriveSpeed(goalDriveSpeed);// forward
 			}
 		}
 	}
@@ -145,15 +150,15 @@ public class SwerveModule {
 		return driveEncoder.get() - relative;
 	}
 
-	public double convertToWheelRelative(double wheelAngleGoal) {
-		return ((wheelAngleGoal + zeroValue) + 720) % 360;
+	public double convertToWheelRelative(double angle) {
+		return ((angle + zeroValue) + 720) % 360;
 	}
 
-	public double convertToRobotRelative(double wheelAngleGoal) {
-		return ((wheelAngleGoal - zeroValue) + 720) % 360;
+	public double convertToRobotRelative(double angle) {
+		return ((angle - zeroValue) + 720) % 360;
 	}
 	
 	public double robotRelativeAngle() {
-		return convertToRobotRelative(getAngle());
+		return convertToRobotRelative(getRawAngle());
 	}
 }
