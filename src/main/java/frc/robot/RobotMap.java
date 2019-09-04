@@ -150,6 +150,8 @@ public class RobotMap {
 	public static final double DPS_TO_RPM = 0.1667;
 	public static final double MAX_DRIVE_POWER = MAX_SWERVE_SPEED_IN_RPM / 660;
 	public static final double MAX_CM_PER_SECOND = MAX_SWERVE_SPEED_IN_RPM * INCH_TO_CM * SWERVE_WHEEL_DIAMETER * Math.PI / 60;
+	public static final double swerveSteerFirstDeclinePower = 0.2;
+	public static final double swerveSteerFirstDeclineAngle = 15;
 
 	//physics
 	public static final double DRIVE_MAX_ACCELERATION_PER_SECOND = 2; //NEEDS TO BE REPLACED WITH ACTUAL VALUE

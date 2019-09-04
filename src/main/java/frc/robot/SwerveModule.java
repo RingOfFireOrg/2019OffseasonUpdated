@@ -103,12 +103,11 @@ public class SwerveModule {
 	}
 	
 	public double steerAngleDeviation(double goalRobotRelativeAngle) {
-		return ((goalRobotRelativeAngle - robotRelativeAngle()) + 720) % 360;
+		return (((360 - goalRobotRelativeAngle) - robotRelativeAngle()) + 720) % 360;
 	}
 
 	public void control(double goalDriveSpeed, double goalSteerAngle) {
 		SmartDashboard.putNumber("WheelSpeed:D/S-" + moduleName, getRate());
-		
 		double wheelTurnAngle0to360 = steerAngleDeviation(goalSteerAngle);
 		double optimizedWheelTurnAngle; //will be set to a value between -90 and 90
 	

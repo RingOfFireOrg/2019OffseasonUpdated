@@ -427,8 +427,25 @@ public class SwerveDrive {
 		return new Point(rotationMagnitude, rotationMagnitude);
 	}
 
-	Point[] wheelReferenceAlignment(Point[]) {
+	Point[] wheelReferenceAlignment(Point[] wheelVectors) {
+		double maxAngleDeviation = Math.abs(frontRight.steerAngleDeviation(wheelVectors[0].getCompassAngle()));
+		maxAngleDeviation = CustomMath.returnGreater(maxAngleDeviation, Math.abs(frontLeft.steerAngleDeviation(wheelVectors[1].getCompassAngle())));
+		maxAngleDeviation = CustomMath.returnGreater(maxAngleDeviation, Math.abs(backLeft.steerAngleDeviation(wheelVectors[2].getCompassAngle())));
+		maxAngleDeviation = CustomMath.returnGreater(maxAngleDeviation, Math.abs(backRight.steerAngleDeviation(wheelVectors[3].getCompassAngle())));
 
+		double swerveSteerDeviationScale = 0;
+		//equations are elliptical piecewise functions
+		if (maxAngleDeviation < RobotMap.swerveSteerFirstDeclineAngle) {
+			swerveSteerDeviationScale = RobotMap.swerveSteerFirstDeclinePower + ((1 - RobotMap.swerveSteerFirstDeclinePower) * 
+				(Math.sqrt(1 - (Math.pow(maxAngleDeviation / RobotMap.swerveSteerFirstDeclineAngle, 2)))));
+		} else if (maxAngleDeviation < 90) {
+			swerveSteerDeviationScale = RobotMap.swerveSteerFirstDeclinePower + Math.sqrt(Math.pow(RobotMap.swerveSteerFirstDeclinePower, 2) * 
+				(1 - (Math.pow((maxAngleDeviation - 90) * (90 - RobotMap.swerveSteerFirstDeclineAngle), 2))));
+		}
+		for (int i = 0 ; i < 4 ; i ++) {
+			wheelVectors[i] = GeometricMath.scaleVector(wheelVectors[i], swerveSteerDeviationScale);
+		}
+		return wheelVectors;
 	}
 
 	Point[] speedScale(Point[] speedSet, double speedLimit) {
@@ -451,10 +468,10 @@ public class SwerveDrive {
 	}
 
 	void setModules(Point[] vectors) {
-		frontRight.control(vectors[0].getMagnitude(), 360 - vectors[0].getCompassAngle());
-		frontLeft.control(vectors[1].getMagnitude(), 360 - vectors[1].getCompassAngle());
-		backLeft.control(vectors[2].getMagnitude(), 360 - vectors[2].getCompassAngle());
-		backRight.control(vectors[3].getMagnitude(), 360 - vectors[3].getCompassAngle());
+		frontRight.control(vectors[0].getMagnitude(), vectors[0].getCompassAngle());
+		frontLeft.control(vectors[1].getMagnitude(), vectors[1].getCompassAngle());
+		backLeft.control(vectors[2].getMagnitude(), vectors[2].getCompassAngle());
+		backRight.control(vectors[3].getMagnitude(), vectors[3].getCompassAngle());
 		SmartDashboard.putNumber("Data1", vectors[0].getMagnitude());
 		// double power = 0.42342342934797;
 		// frontRight.control(power, 0);
