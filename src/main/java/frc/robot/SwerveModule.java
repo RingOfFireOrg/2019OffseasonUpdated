@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.awt.Robot;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -22,6 +24,10 @@ public class SwerveModule {
 	String moduleName;
 	double optimizedSpeed;
 	PID speedRegulation;
+	PIDConstants swerveDriveSpeedGains = new PIDConstants(1, -0.000001, 0);
+	PID swerveSteer;
+	//TODO tune swerve steer PID
+	PIDConstants swerveSteerGains = new PIDConstants(0.01, 0, 0);
 	double accumulatedGR = 0;
 	int powerInversion = 1;
 	static final double MAX_STEER_POWER = 0.8;
@@ -40,9 +46,13 @@ public class SwerveModule {
 		driveEncoder.reset();
 		driveEncoder.setDistancePerPulse(18); //in degrees (360)/(20 pulses per rotation)
 
-		speedRegulation = new PID(0, -0.000001, 0);
+		speedRegulation = new PID(swerveDriveSpeedGains.getKP(), swerveDriveSpeedGains.getKI(), swerveDriveSpeedGains.getKD());
 		speedRegulation.setOutputRange(-RobotMap.MAX_DRIVE_POWER, RobotMap.MAX_DRIVE_POWER);
 		speedRegulation.reset();
+
+		swerveSteer = new PID(swerveSteerGains.getKP(), swerveSteerGains.getKI(), swerveSteerGains.getKD());
+		swerveSteer.setOutputRange(-1, 1);
+		swerveSteer.reset();
 	}
 
 	public void invertModule() {
@@ -103,42 +113,29 @@ public class SwerveModule {
 	}
 	
 	public double steerAngleDeviation(double goalRobotRelativeAngle) {
-		return (((360 - goalRobotRelativeAngle) - robotRelativeAngle()) + 720) % 360;
+		double error = (((360 - goalRobotRelativeAngle) - robotRelativeAngle()) + 720) % 360;
+		if (error > 180) error -= 360;
+		return error;
+		//will return an error between -180 & 180
 	}
 
 	public void control(double goalDriveSpeed, double goalSteerAngle) {
+		//Complete rebuild -- simplified -- untested 9/7/19 CM
 		SmartDashboard.putNumber("WheelSpeed:D/S-" + moduleName, getRate());
-		double wheelTurnAngle0to360 = steerAngleDeviation(goalSteerAngle);
-		double optimizedWheelTurnAngle; //will be set to a value between -90 and 90
-	
-		//should reform: never set steer to 0
-		//TODO make steering a PID -CM
-		if (wheelTurnAngle0to360 < 5 || wheelTurnAngle0to360 > 355) {
-			// stop steering
-			steer.set(ControlMode.PercentOutput, 0);
-			setDriveSpeed(goalDriveSpeed);
-		} else if (wheelTurnAngle0to360 > 175 && wheelTurnAngle0to360 < 185){
-			//stop steering
-			steer.set(ControlMode.PercentOutput, 0);
-			setDriveSpeed(-goalDriveSpeed);  //This might be the problem jw/rm
-		} else {
-			if (wheelTurnAngle0to360 > 90 && wheelTurnAngle0to360 < 270) // for quadrants 2 & 3
-			{
-				optimizedWheelTurnAngle = (wheelTurnAngle0to360 - 180); // converting angles from quadrant 2 to quad 4 and converting from quad 3 to quad 1
-				setSteerSpeed(optimizedWheelTurnAngle/90);
-				setDriveSpeed(-goalDriveSpeed);// go backwards
-			} else // quads 1 & 4
-			{
-				if (wheelTurnAngle0to360 >= 270) // quad 4
-				{
-					optimizedWheelTurnAngle = (wheelTurnAngle0to360 - 360); // converting from large + to small -
-				} else {
-					optimizedWheelTurnAngle = wheelTurnAngle0to360; // quad 1, no change
-				}
-				setSteerSpeed(optimizedWheelTurnAngle/90);
-				setDriveSpeed(goalDriveSpeed);// forward
+		double steerAngularError = steerAngleDeviation(goalSteerAngle);
+
+		if (Math.abs(steerAngularError) > 90) {
+			if (steerAngularError > 0) {
+				steerAngularError -= 180;
+			} else {
+				steerAngularError += 180;
 			}
+			goalDriveSpeed *= -1;
 		}
+		swerveSteer.setError(steerAngularError);
+		swerveSteer.update();
+		setSteerSpeed(swerveSteer.getOutput());
+		setDriveSpeed(goalDriveSpeed);
 	}
 
 	public double driveEncoderDegrees() {
